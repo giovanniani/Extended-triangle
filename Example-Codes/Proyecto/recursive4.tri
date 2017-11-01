@@ -1,0 +1,15 @@
+let
+
+  var c: Integer;
+
+  recursive 
+      proc a() ~ a() end
+      and
+      proc b(c : Integer) ~ b(8) ; a() end
+  end
+
+in
+
+   putint(c)
+
+end

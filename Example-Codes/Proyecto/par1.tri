@@ -1,0 +1,14 @@
+let
+
+	const a ~ 3;
+	par
+		const b ~ 3
+		and
+		var c := a + 3
+	end
+
+in
+
+	putint(c)
+
+end
