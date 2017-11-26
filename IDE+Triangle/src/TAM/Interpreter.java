@@ -215,10 +215,7 @@ public class Interpreter {
 
 // INTERPRETATION
  static void checkIndex(int index)
- {
-    System.out.println("Index: "+index);
-    System.out.println("SB: "+SB);    
-    System.out.println("ST: "+ST);    
+ {   
     if( (SB <= index && index<ST) == false )
     {
         status = indexError;
@@ -466,7 +463,6 @@ public class Interpreter {
       // Execute instruction ...
       switch (op) {
         case Machine.LOADop:
-          System.out.println("Hace LOADop");
           addr = d + content(r);
           checkSpace(n);
           checkIndex(d);
@@ -476,7 +472,6 @@ public class Interpreter {
           CP = CP + 1;
           break;
         case Machine.LOADAop:
-          System.out.println("Hace LOADAop");
           addr = d + content(r);
           
           checkSpace(1);
@@ -485,26 +480,23 @@ public class Interpreter {
           CP = CP + 1;
           break;
         case Machine.LOADIop:
-          System.out.println("Hace LOADIop");
           ST = ST - 1;
           addr = data[ST];
           checkSpace(n);
+          checkIndex(addr);
           for (index = 0; index < n; index++)
             data[ST + index] = data[addr + index];
           ST = ST + n;
           CP = CP + 1;
           break;
         case Machine.LOADLop:
-          System.out.println("Hace LOADLop");
-          checkSpace(1);
-          
+          checkSpace(1);          
           data[ST] = d;
           ST = ST + 1;
           CP = CP + 1;
           break;
           
         case Machine.STOREop:
-          System.out.println("Hace STOREop");
           addr = d + content(r);          
           ST = ST - n; 
           checkIndex(addr);
@@ -514,7 +506,6 @@ public class Interpreter {
           break;
           
         case Machine.STOREIop:
-          System.out.println("Hace STOREIop");
           ST = ST - 1;
           addr = data[ST];
           ST = ST - n;
@@ -524,7 +515,6 @@ public class Interpreter {
           CP = CP + 1;
           break;
         case Machine.CALLop:
-          System.out.println("Hace CALLop");
           addr = d + content(r);
           if (addr >= Machine.PB) {
             callPrimitive(addr - Machine.PB);
@@ -546,7 +536,6 @@ public class Interpreter {
           }
           break;
         case Machine.CALLIop:
-          System.out.println("Hace CALLIop");
           ST = ST - 2;
           addr = data[ST + 1];
           if (addr >= Machine.PB) {
