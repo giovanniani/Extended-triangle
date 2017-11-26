@@ -44,7 +44,7 @@ public class Interpreter {
   final static int
     running = 0, halted = 1, failedDataStoreFull = 2, failedInvalidCodeAddress = 3,
     failedInvalidInstruction = 4, failedOverflow = 5, failedZeroDivide = 6,
-    failedIOError = 7;
+    failedIOError = 7, indexError=8;
 
   static long
     accumulator;
@@ -52,7 +52,6 @@ public class Interpreter {
   static int content (int r) {
     // Returns the current content of register r,
     // even if r is one of the pseudo-registers L1..L6.
-
     switch (r) {
       case Machine.CBr:
         return CB;
@@ -90,7 +89,6 @@ public class Interpreter {
         return 0;
     }
   }
-
 
 // PROGRAM STATUS
 
@@ -206,6 +204,9 @@ public class Interpreter {
       case failedIOError:
         System.out.println("Program has failed due to an IO error.");
         break;
+      case indexError:
+        System.out.println("Index out bounds exception");
+        break;          
     }
     if (status != halted)
       dump();
@@ -213,11 +214,20 @@ public class Interpreter {
 
 
 // INTERPRETATION
+ static void checkIndex(int index)
+ {
+    System.out.println("Index: "+index);
+    System.out.println("SB: "+SB);    
+    System.out.println("ST: "+ST);    
+    if( (SB <= index && index<ST) == false )
+    {
+        status = indexError;
+    }
+ }
 
   static void checkSpace (int spaceNeeded) {
     // Signals failure if there is not enough space to expand the stack or
     // heap by spaceNeeded.
-
     if (HT - ST < spaceNeeded)
       status = failedDataStoreFull;
   }
@@ -428,6 +438,8 @@ public class Interpreter {
       case Machine.disposeDisplacement:
         ST = ST - 1; // no action taken at present
         break;
+      case Machine.indexcheckDisplacement:
+        break;
     }
   }
 
@@ -454,21 +466,26 @@ public class Interpreter {
       // Execute instruction ...
       switch (op) {
         case Machine.LOADop:
+          System.out.println("Hace LOADop");
           addr = d + content(r);
           checkSpace(n);
+          checkIndex(d);
           for (index = 0; index < n; index++)
             data[ST + index] = data[addr + index];
           ST = ST + n;
           CP = CP + 1;
           break;
         case Machine.LOADAop:
+          System.out.println("Hace LOADAop");
           addr = d + content(r);
+          
           checkSpace(1);
           data[ST] = addr;
           ST = ST + 1;
           CP = CP + 1;
           break;
         case Machine.LOADIop:
+          System.out.println("Hace LOADIop");
           ST = ST - 1;
           addr = data[ST];
           checkSpace(n);
@@ -478,27 +495,36 @@ public class Interpreter {
           CP = CP + 1;
           break;
         case Machine.LOADLop:
+          System.out.println("Hace LOADLop");
           checkSpace(1);
+          
           data[ST] = d;
           ST = ST + 1;
           CP = CP + 1;
           break;
+          
         case Machine.STOREop:
-          addr = d + content(r);
-          ST = ST - n;
+          System.out.println("Hace STOREop");
+          addr = d + content(r);          
+          ST = ST - n; 
+          checkIndex(addr);
           for (index = 0; index < n; index++)
             data[addr + index] = data[ST + index];
           CP = CP + 1;
           break;
+          
         case Machine.STOREIop:
+          System.out.println("Hace STOREIop");
           ST = ST - 1;
           addr = data[ST];
           ST = ST - n;
+          checkIndex(addr);
           for (index = 0; index < n; index++)
             data[addr + index] = data[ST + index];
           CP = CP + 1;
           break;
         case Machine.CALLop:
+          System.out.println("Hace CALLop");
           addr = d + content(r);
           if (addr >= Machine.PB) {
             callPrimitive(addr - Machine.PB);
@@ -506,7 +532,10 @@ public class Interpreter {
           } else {
             checkSpace(3);
             if ((0 <= n) && (n <= 15))
-              data[ST] = content(n); // static link
+            {
+              
+              data[ST] = content(n);
+            } // static link
             else
               status = failedInvalidInstruction;
             data[ST + 1] = LB; // dynamic link
@@ -517,6 +546,7 @@ public class Interpreter {
           }
           break;
         case Machine.CALLIop:
+          System.out.println("Hace CALLIop");
           ST = ST - 2;
           addr = data[ST + 1];
           if (addr >= Machine.PB) {
@@ -553,21 +583,27 @@ public class Interpreter {
           ST = addr + n;
           CP = CP + 1;
           break;
+          
         case Machine.JUMPop:
           CP = d + content(r);
           break;
-        case Machine.JUMPIop:
+          
+        case Machine.JUMPIop:          
           ST = ST - 1;
           CP = data[ST];
           break;
+          
         case Machine.JUMPIFop:
           ST = ST - 1;
           if (data[ST] == n)
+          {
             CP = d + content(r);
+          }
           else
             CP = CP + 1;
           break;
-        case Machine.HALTop:
+          
+        case Machine.HALTop:          
           status = halted;
           break;
       }
@@ -615,8 +651,7 @@ public class Interpreter {
 // RUNNING
 
   public static void main(String[] args) {
-    System.out.println("********** TAM Interpreter (Java Version 2.1) **********");
-
+    System.out.println("********** TAM Interpreter (Java Version 2.1) **********");     
     if (args.length == 1)
       objectName = args[0];
   	else

@@ -137,6 +137,7 @@ public class Disassembler {
    * @param d	the displacment of the primitive routine.
    */
   private static void writePrimitive (int d) {
+    
     switch (d) {
       case Machine.idDisplacement:
         System.out.print ("id      ");
