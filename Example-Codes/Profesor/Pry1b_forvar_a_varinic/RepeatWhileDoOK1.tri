@@ -1,8 +1,0 @@
-repeat
-
-  while 0 < 1 do
-
-    putint (1) 
-
-end
-
