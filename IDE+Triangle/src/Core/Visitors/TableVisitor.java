@@ -436,7 +436,7 @@ public class TableVisitor implements Visitor {
         String name = ast.I.spelling;
         String type = "N/A";
 
-        try {
+        /*try {
             int size = (ast.entity!=null?ast.entity.size:0);
             int level = -1;
             int displacement = -1;
@@ -456,7 +456,18 @@ public class TableVisitor implements Visitor {
       
         ast.E.visit(this, null);
         ast.I.visit(this, null);
-        ast.V.visit(this, null);
+        ast.V.visit(this, null);*/
+        
+        try {
+            addIdentifier(ast.I.spelling, 
+              "KnownAddress", 
+              (ast.entity!=null?ast.entity.size:0), 
+              ((KnownAddress)ast.entity).address.level, 
+              ((KnownAddress)ast.entity).address.displacement, 
+              -1);
+            } catch (NullPointerException e) { }
+        
+        ast.E.visit(this, null);
 
         return(null);
     }
@@ -472,7 +483,7 @@ public class TableVisitor implements Visitor {
         String name = ast.I.spelling;
         String type = "N/A";
 
-        try {
+        /*try {
             int size = (ast.entity!=null?ast.entity.size:0);
             int level = -1;
             int displacement = -1;
@@ -493,8 +504,17 @@ public class TableVisitor implements Visitor {
         ast.E.visit(this, null);
         ast.T.visit(this, null);
         ast.I.visit(this, null);
-        ast.V.visit(this, null);
-
+        ast.V.visit(this, null);*/
+        
+        try {
+            addIdentifier(ast.I.spelling, 
+              "KnownAddress", 
+              (ast.entity!=null?ast.entity.size:0), 
+              ((KnownAddress)ast.entity).address.level, 
+              ((KnownAddress)ast.entity).address.displacement, 
+              -1);
+            } catch (NullPointerException e) { }
+        ast.E.visit(this, null);
         return(null);
     }
 
