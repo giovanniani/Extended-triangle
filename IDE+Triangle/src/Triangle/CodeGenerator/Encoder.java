@@ -283,10 +283,11 @@ public final class Encoder implements Visitor {
     patch(jumpAddr, nextInstrAddr);
     encodeFetch(ast.V.V, new Frame (frame, Machine.integerSize), Machine.integerSize);
     emit(Machine.LOADop, valSize, Machine.SBr, frame.size);
-
-    // Check the E3.
+    emit(Machine.CALLop, Machine.SBr, Machine.PBr, Machine.leDisplacement);
     jumpifAddr = nextInstrAddr;
     emit(Machine.JUMPIFop, Machine.falseRep, Machine.CBr, jumpifAddr);
+
+    // Check the E3.
     ast.E3.visit(this, frame);
     emit(Machine.JUMPIFop, Machine.trueRep, Machine.CBr, loopAddr);
 
@@ -329,10 +330,11 @@ public final class Encoder implements Visitor {
     patch(jumpAddr, nextInstrAddr);
     encodeFetch(ast.V.V, new Frame (frame, Machine.integerSize), Machine.integerSize);
     emit(Machine.LOADop, valSize, Machine.SBr, frame.size);
-
-    // Check the E3.
+    emit(Machine.CALLop, Machine.SBr, Machine.PBr, Machine.leDisplacement);
     jumpifAddr = nextInstrAddr;
     emit(Machine.JUMPIFop, Machine.falseRep, Machine.CBr, jumpifAddr);
+
+    // Check the E3.
     ast.E3.visit(this, frame);
     emit(Machine.JUMPIFop, Machine.falseRep, Machine.CBr, loopAddr);
 

@@ -1,8 +1,8 @@
 let
-  var max := 6
+  var max := 20
 in
 
-  for var i := 1 to 10 while i < max do 
+  for var i := 1 to 10 while i <= max do 
 
     putint(i); ! debe imprimir del 1 al 10
     puteol()

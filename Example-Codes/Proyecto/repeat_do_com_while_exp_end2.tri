@@ -1,0 +1,13 @@
+let
+  var num := 1
+in
+
+  repeat while (num <= 10) do
+
+    putint(num);
+    puteol();
+    num := num + 1
+
+  end
+
+end
