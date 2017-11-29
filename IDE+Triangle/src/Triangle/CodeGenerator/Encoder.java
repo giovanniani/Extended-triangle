@@ -179,21 +179,20 @@ public final class Encoder implements Visitor {
    */
   public Object visitForDoCommand(ForDoCommand ast, Object o) {
     Frame frame = (Frame) o;
-    int jumpAddr, loopAddr;
-
-    // Código Final (GENERA: For Var Id := Exp1 to Exp2 do Com).
+  
+    // Código Final (GENERA: For Var Id := Exp1 to Exp2 do Com). (Acepta ciclos anidados)
     // Exp1 evaluada 1 vez.
-    // Exp2 evaluada 1 vez.
+    // Exp2 evaluada 1 vez.*/
     emit(Machine.PUSHop, 0, 0, Machine.integerSize);
     int valSize = (Integer) ast.E2.visit(this, frame);
     ast.entity = new KnownAddress(valSize, frame.level, frame.size);
-    writeTableDetails(ast);
     emit(Machine.STOREop, valSize, Machine.SBr,frame.size);
-    ast.V.visit(this, new Frame(frame,valSize));
-    jumpAddr = nextInstrAddr;
+    Frame frame1 = new Frame(frame,valSize);
+    int extraSize = (Integer)ast.V.visit(this, frame1); 
+    Integer jumpAddr = new Integer(nextInstrAddr);
     emit(Machine.JUMPop, 0, Machine.CBr, 0);
-    loopAddr = nextInstrAddr;
-    ast.C.visit(this, frame);
+    Integer loopAddr = new Integer(nextInstrAddr);
+    ast.C.visit(this, new Frame(frame1,extraSize));
 
     // Check the index.
     encodeFetch(ast.V.V, new Frame (frame, Machine.integerSize), Machine.integerSize);
@@ -260,22 +259,23 @@ public final class Encoder implements Visitor {
    */
   public Object visitForWhileDoCommand(ForWhileDoCommand ast, Object o) {
     Frame frame = (Frame) o;
-    int jumpAddr, jumpifAddr, loopAddr;
+    //int jumpAddr, jumpifAddr, loopAddr;
 
     // For Var Id := Exp1 to Exp2 do Com
-    // Exp1 evaluated 1 vez.
-    // Exp2 evaluated 1 vez.
+    // Exp1 evaluated once.
+    // Exp2 evaluated once.
+    
     emit(Machine.PUSHop, 0, 0, Machine.integerSize);
     int valSize = (Integer) ast.E2.visit(this, frame);
     ast.entity = new KnownAddress(valSize, frame.level, frame.size);
-    writeTableDetails(ast);
     emit(Machine.STOREop, valSize, Machine.SBr,frame.size);
-    ast.V.visit(this, new Frame(frame,valSize));
-    jumpAddr = nextInstrAddr;
+    Frame frame1 = new Frame(frame,valSize);
+    int extraSize = (Integer)ast.V.visit(this, frame1); 
+    Integer jumpAddr = new Integer(nextInstrAddr);
     emit(Machine.JUMPop, 0, Machine.CBr, 0);
-    loopAddr = nextInstrAddr;
-    ast.C.visit(this, frame);
-
+    Integer loopAddr = new Integer(nextInstrAddr);
+    ast.C.visit(this, new Frame(frame1,extraSize));
+    
     // Check the index.
     encodeFetch(ast.V.V, new Frame (frame, Machine.integerSize), Machine.integerSize);
     emit(Machine.CALLop, Machine.SBr, Machine.PBr, Machine.succDisplacement);
@@ -284,7 +284,7 @@ public final class Encoder implements Visitor {
     encodeFetch(ast.V.V, new Frame (frame, Machine.integerSize), Machine.integerSize);
     emit(Machine.LOADop, valSize, Machine.SBr, frame.size);
     emit(Machine.CALLop, Machine.SBr, Machine.PBr, Machine.leDisplacement);
-    jumpifAddr = nextInstrAddr;
+    Integer jumpifAddr = new Integer(nextInstrAddr);
     emit(Machine.JUMPIFop, Machine.falseRep, Machine.CBr, jumpifAddr);
 
     // Check the E3.
@@ -307,22 +307,23 @@ public final class Encoder implements Visitor {
    */
   public Object visitForUntilDoCommand(ForUntilDoCommand ast, Object o) {
     Frame frame = (Frame) o;
-    int jumpAddr, jumpifAddr, loopAddr;
+    //int jumpAddr, jumpifAddr, loopAddr;
 
     // For Var Id := Exp1 to Exp2 do Com
     // Exp1 evaluated 1 vez.
     // Exp2 evaluated 1 vez.
+
     emit(Machine.PUSHop, 0, 0, Machine.integerSize);
     int valSize = (Integer) ast.E2.visit(this, frame);
     ast.entity = new KnownAddress(valSize, frame.level, frame.size);
-    writeTableDetails(ast);
     emit(Machine.STOREop, valSize, Machine.SBr,frame.size);
-    ast.V.visit(this, new Frame(frame,valSize));
-    jumpAddr = nextInstrAddr;
+    Frame frame1 = new Frame(frame,valSize);
+    int extraSize = (Integer)ast.V.visit(this, frame1); 
+    Integer jumpAddr = new Integer(nextInstrAddr);
     emit(Machine.JUMPop, 0, Machine.CBr, 0);
-    loopAddr = nextInstrAddr;
-    ast.C.visit(this, frame);
-
+    Integer loopAddr = new Integer(nextInstrAddr);
+    ast.C.visit(this, new Frame(frame1,extraSize));
+    
     // Check the index.
     encodeFetch(ast.V.V, new Frame (frame, Machine.integerSize), Machine.integerSize);
     emit(Machine.CALLop, Machine.SBr, Machine.PBr, Machine.succDisplacement);
@@ -331,7 +332,7 @@ public final class Encoder implements Visitor {
     encodeFetch(ast.V.V, new Frame (frame, Machine.integerSize), Machine.integerSize);
     emit(Machine.LOADop, valSize, Machine.SBr, frame.size);
     emit(Machine.CALLop, Machine.SBr, Machine.PBr, Machine.leDisplacement);
-    jumpifAddr = nextInstrAddr;
+    Integer jumpifAddr = new Integer(nextInstrAddr);
     emit(Machine.JUMPIFop, Machine.falseRep, Machine.CBr, jumpifAddr);
 
     // Check the E3.
@@ -647,17 +648,18 @@ public final class Encoder implements Visitor {
 
     return new Integer(extraSize);
 */
-
+    //(ForVarDeclaration ast.V,new(frame,valSize))
     Frame frame = (Frame) o;
     int valSize;
     //if(ast.I.spelling.equals(o))
-    
+    //frame,valSize
     // Variable declaration.
     emit(Machine.PUSHop, 0, 0, Machine.integerSize);
     valSize = ((Integer) ast.E.visit(this, frame));
     ast.entity = new KnownAddress(Machine.addressSize, frame.level, frame.size);
-    encodeStore(ast.V, new Frame (frame, valSize), valSize);
-    writeTableDetails(ast);
+    //writeTableDetails(ast);
+    //encodeStore(ast.V, new Frame (frame, valSize), valSize);
+    emit(Machine.STOREop, valSize, Machine.SBr,frame.size);
     return valSize;
   }
 
@@ -671,7 +673,7 @@ public final class Encoder implements Visitor {
   public Object visitVarDeclarationInitialization(VarDeclarationInitialization ast, Object o) {
     Frame frame = (Frame) o;
     int extraSize;
-
+    
     // Variable declaration.
     extraSize = ((Integer) ast.T.visit(this, null)).intValue();
     emit(Machine.PUSHop, 0, 0, extraSize);
@@ -911,7 +913,7 @@ public final class Encoder implements Visitor {
       writeTableDetails(ast);
     } else
       typeSize = ast.entity.size;
-    return new Integer(typeSize);
+      return new Integer(typeSize);
   }
 
   public Object visitBoolTypeDenoter(BoolTypeDenoter ast, Object o) {

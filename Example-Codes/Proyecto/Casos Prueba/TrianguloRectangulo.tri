@@ -1,0 +1,14 @@
+let
+	var a:Integer;
+	const b~200;
+	var c:= 11
+in
+	for var a:= c to 14 do 						!Genera 4 Triángulos Rectángulos
+		for var a:= 1 to b while a<=10 do 			!De la lista elimina el primer elemento
+			for var a:= a to 100 until a=11 do 
+				putint(a) 				!Imprime lista de 1-10
+			end;
+			puteol()
+		end
+	end
+end

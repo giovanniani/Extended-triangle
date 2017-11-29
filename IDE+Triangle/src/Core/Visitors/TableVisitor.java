@@ -343,18 +343,21 @@ public class TableVisitor implements Visitor {
         int size = (ast.entity!=null?ast.entity.size:0);
         int level = -1;
         int displacement = -1;
-        int value = -1;
+        String value = "-1";
       
         if (ast.entity instanceof KnownValue) {
               type = "KnownValue";
-              value = ((KnownValue)ast.entity).value;
+              //value = ((KnownValue)ast.entity).toString();
+              addIdentifier(name, type, size, level, displacement, ast.E);
+              System.out.println(""+((KnownValue)ast.entity).value);
           }
           else if (ast.entity instanceof UnknownValue) {
               type = "UnknownValue";
               level = ((UnknownValue)ast.entity).address.level;
               displacement = ((UnknownValue)ast.entity).address.displacement;
+              addIdentifier(name, type, size, level, displacement, value);
           }
-          addIdentifier(name, type, size, level, displacement, value);
+          
       } catch (NullPointerException e) { }
 
       ast.E.visit(this, null);
@@ -413,7 +416,7 @@ public class TableVisitor implements Visitor {
   
   public Object visitVarDeclaration(VarDeclaration ast, Object o) {      
       try {
-      addIdentifier(ast.I.spelling, 
+              addIdentifier(ast.I.spelling, 
               "KnownAddress", 
               (ast.entity!=null?ast.entity.size:0), 
               ((KnownAddress)ast.entity).address.level, 
@@ -464,10 +467,11 @@ public class TableVisitor implements Visitor {
               (ast.entity!=null?ast.entity.size:0), 
               ((KnownAddress)ast.entity).address.level, 
               ((KnownAddress)ast.entity).address.displacement, 
-              -1);
+              ast.E);
             } catch (NullPointerException e) { }
+        //value = ((KnownValue)ast.entity).value;
         
-        ast.E.visit(this, null);
+        //ast.E.visit(this, null);
 
         return(null);
     }
@@ -505,14 +509,21 @@ public class TableVisitor implements Visitor {
         ast.T.visit(this, null);
         ast.I.visit(this, null);
         ast.V.visit(this, null);*/
-        
+        //System.out.println("Valor1 "+ ast.I.decl.entity); KnownAddress
+        //System.out.println("Valor1 "+ ((SimpleVname)ast.V).I.spelling);
+        //System.out.println("Valor1 "+ ((IntegerExpression)ast.E).IL.spelling);
+        //System.out.println("Valor2 "+ ast.V.type);
+        //System.out.println("Valor3 "+ ast.V.variable);
         try {
+            //int value = ((KnownValue)ast.I.entity).value;
+            
+            
             addIdentifier(ast.I.spelling, 
               "KnownAddress", 
               (ast.entity!=null?ast.entity.size:0), 
               ((KnownAddress)ast.entity).address.level, 
               ((KnownAddress)ast.entity).address.displacement, 
-              -1);
+              ast.E);
             } catch (NullPointerException e) { }
         ast.E.visit(this, null);
         return(null);
@@ -839,22 +850,44 @@ public class TableVisitor implements Visitor {
   
     /**
      * Adds an identifier to the table.
+     * 
+     * WHIT A LITLE MODIFICATION
      */
-    private void addIdentifier(String name, String type, int size, int level, int displacement, int value) {
+    private void addIdentifier(String name, String type, int size, int level, int displacement, Object value) {
         boolean exists = false;
+        String value2 = "UnknownValue";
         
-        for (int i=0;(i<model.getRowCount() && !exists);i++)
-            if (((String)model.getValueAt(i, 0)).compareTo(name) == 0)
-                exists = true;
+        //for (int i=0;(i<model.getRowCount() && !exists);i++)
+        //    if (((String)model.getValueAt(i, 0)).compareTo(name) == 0)
+        //        exists = true;
         
-        if (!exists) {
+        //if (!exists) {
+            if(value instanceof IntegerExpression) //Check if value is IntegerExpression
+            {
+                value2 = ((IntegerExpression)value).IL.spelling;
+            }
+            else
+            {
+                if(value instanceof CharacterExpression) //Check if value is CharacterExpression
+                {
+                    String value3 = ((CharacterExpression)value).CL.spelling.replace("'","");
+                    value2 = value3.codePointAt(0)+"  ("+value3+")";
+                }
+                else
+                {
+                    if(!value.toString().equals("-1") && value instanceof ArrayExpression && value instanceof RecordExpression) //Check if value is not Integer -1, ArrayExpresion or RecorExpression
+                    {
+                        value2=String.valueOf(value);
+                    }
+                }
+            }
             model.addRow(new String[] {name, 
                     type, 
                     String.valueOf(size), 
                     (level<0?" ":String.valueOf(level)), 
                     (displacement<0?" ":String.valueOf(displacement)), 
-                    (value<0?" ":String.valueOf(value))});
-        }
+                    /*((value<0)?" ":String.valueOf(value))*/value2});
+        //}
     }
     
     
