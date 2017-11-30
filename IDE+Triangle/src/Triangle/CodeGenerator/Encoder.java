@@ -101,10 +101,12 @@ import Triangle.AbstractSyntaxTrees.RepeatDoWhileCommand;
 import Triangle.AbstractSyntaxTrees.RepeatUntilCommand;
 import Triangle.AbstractSyntaxTrees.RepeatWhileCommand;
 import Triangle.AbstractSyntaxTrees.WhileCommand;
+import java.util.HashMap;
+import java.util.Map;
 
 public final class Encoder implements Visitor {
-
-
+    
+    private Map<RuntimeEntity, Integer> indexCheck = new HashMap<RuntimeEntity, Integer>();
   // Commands
   public Object visitAssignCommand(AssignCommand ast, Object o) {
     Frame frame = (Frame) o;
@@ -208,7 +210,7 @@ public final class Encoder implements Visitor {
     //Código Mejorado (GENERA: For Var Id := Exp1 to Exp2 do Com)
     //Exp1 evaluada 1 vez
     //Exp2 evaluada n veces
-/*
+    /*
     ast.V.visit(this, frame);
     jumpAddr=nextInstrAddr;
     emit(Machine.JUMPop, 0, Machine.CBr, 0);
@@ -620,6 +622,10 @@ public final class Encoder implements Visitor {
     extraSize = ((Integer) ast.T.visit(this, null)).intValue();
     emit(Machine.PUSHop, 0, 0, extraSize);
     ast.entity = new KnownAddress(Machine.addressSize, frame.level, frame.size);
+    if(ast.T instanceof ArrayTypeDenoter )
+    {
+          indexCheck.put(ast.entity,Integer.parseInt(((ArrayTypeDenoter)ast.T).IL.spelling));
+    }
     writeTableDetails(ast);
     return new Integer(extraSize);
   }
@@ -678,6 +684,10 @@ public final class Encoder implements Visitor {
     extraSize = ((Integer) ast.T.visit(this, null)).intValue();
     emit(Machine.PUSHop, 0, 0, extraSize);
     ast.entity = new KnownAddress(Machine.addressSize, frame.level, frame.size);
+    if(ast.T instanceof ArrayTypeDenoter )
+    {
+          indexCheck.put(ast.entity,Integer.parseInt(((ArrayTypeDenoter)ast.T).IL.spelling));
+    }
     writeTableDetails(ast);
 
     // Variable initialization.
@@ -905,15 +915,20 @@ public final class Encoder implements Visitor {
   }
 
   public Object visitArrayTypeDenoter(ArrayTypeDenoter ast, Object o) {
+    //Frame with array length 
+    Frame frame = (Frame)o;    
+
     int typeSize;
     if (ast.entity == null) {
       int elemSize = ((Integer) ast.T.visit(this, null)).intValue();
       typeSize = Integer.parseInt(ast.IL.spelling) * elemSize;
       ast.entity = new TypeRepresentation(typeSize);
       writeTableDetails(ast);
+     
     } else
       typeSize = ast.entity.size;
-      return new Integer(typeSize);
+           
+    return new Integer(typeSize);
   }
 
   public Object visitBoolTypeDenoter(BoolTypeDenoter ast, Object o) {
@@ -1049,7 +1064,6 @@ public final class Encoder implements Visitor {
     return null;
   }
 
-
   // Value-or-variable names
   public Object visitDotVname(DotVname ast, Object o) {
     Frame frame = (Frame) o;
@@ -1064,21 +1078,68 @@ public final class Encoder implements Visitor {
     ast.offset = 0;
     ast.indexed = false;
     return ast.I.decl.entity;
+    
   }
 
   public Object visitSubscriptVname(SubscriptVname ast, Object o) {
     Frame frame = (Frame) o;
     RuntimeEntity baseObject;
     int elemSize, indexSize;
-
-    baseObject = (RuntimeEntity) ast.V.visit(this, frame);
+    baseObject = (RuntimeEntity)ast.V.visit(this, frame);
     ast.offset = ast.V.offset;
     ast.indexed = ast.V.indexed;
+      //System.out.println(((SimpleVname)ast.V).I.spelling+"Expresion: " + ((VnameExpression)ast.E).V);
     elemSize = ((Integer) ast.type.visit(this, null)).intValue();
+    if (!(ast.E instanceof IntegerExpression))
+    {
+        if (((VnameExpression)ast.E).V instanceof SimpleVname)
+        {
+            KnownAddress address = ((KnownAddress)((VnameExpression)ast.E).V.visit(this, frame));
+            System.out.println("Elemento: "+((SimpleVname)((VnameExpression)ast.E).V).I.spelling);
+            System.out.println("Ayudame Diosito: "+address);
+            System.out.println("Direccion: "+address.address.level+" Desplazamiento: "+address.address.displacement);
+
+
+            //CHECK THE INDEX IF EXPRESSION IS VNAME (PROYECTO 2)
+            emit(Machine.LOADLop, 0, 0, 0);                                           //low level (0)
+            encodeFetch(((VnameExpression)ast.E).V, frame, Machine.integerSize);      //X position
+            emit(Machine.CALLop, Machine.SBr, Machine.PBr, Machine.leDisplacement);   //<= less equal
+            encodeFetch(((VnameExpression)ast.E).V, frame, Machine.integerSize);      //X position
+            emit(Machine.LOADLop, 0, 0, indexCheck.get(baseObject));                  // high level
+            emit(Machine.CALLop, Machine.SBr, Machine.PBr, Machine.ltDisplacement);   //< less than
+            emit(Machine.CALLop, Machine.SBr, Machine.PBr, Machine.andDisplacement);  // 0 <= x < high level
+            int jumpifAddr = nextInstrAddr;
+            emit(Machine.JUMPIFop, Machine.trueRep, Machine.CBr, 0);
+            emit(Machine.INDEXCHECK, 0, 0, 0);
+            patch(jumpifAddr, nextInstrAddr);
+        }
+    }
+    
     if (ast.E instanceof IntegerExpression) {
+      
       IntegerLiteral IL = ((IntegerExpression) ast.E).IL;
       ast.offset = ast.offset + Integer.parseInt(IL.spelling) * elemSize;
-    } else {
+      
+      //CHECK THE INDEX IF EXPRESSION IS INTEGER (PROYECTO 2)
+      emit(Machine.LOADLop, 0, 0, 0);                                           //low level (0)
+      emit(Machine.LOADLop, 0, 0, Integer.parseInt(IL.spelling));               //X position
+      emit(Machine.CALLop, Machine.SBr, Machine.PBr, Machine.leDisplacement);   //<= less equal
+      emit(Machine.LOADLop, 0, 0, Integer.parseInt(IL.spelling));               //X position
+      emit(Machine.LOADLop, 0, 0, indexCheck.get(baseObject));                  // high level
+      emit(Machine.CALLop, Machine.SBr, Machine.PBr, Machine.ltDisplacement);   //less than
+      emit(Machine.CALLop, Machine.SBr, Machine.PBr, Machine.andDisplacement);  // 0 <= x < high level
+      int jumpifAddr = nextInstrAddr;
+      emit(Machine.JUMPIFop, Machine.trueRep, Machine.CBr, 0);
+      emit(Machine.INDEXCHECK, 0, 0, 0);
+      patch(jumpifAddr, nextInstrAddr);
+      
+      
+      
+        //System.out.println("Contiene Llave: "+indexCheck.get(baseObject)/*+Integer.parseInt(IL.spelling)*/);
+        //System.out.println("Valor: "+Integer.parseInt(IL.spelling));
+    }
+    else 
+    {
       // v-name is indexed by a proper expression, not a literal
       if (ast.indexed)
         frame.size = frame.size + Machine.integerSize;

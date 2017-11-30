@@ -435,8 +435,6 @@ public class Interpreter {
       case Machine.disposeDisplacement:
         ST = ST - 1; // no action taken at present
         break;
-      case Machine.indexcheckDisplacement:
-        break;
     }
   }
 
@@ -592,6 +590,10 @@ public class Interpreter {
             CP = CP + 1;
           break;
           
+        case Machine.INDEXCHECK:          
+          status = indexError;
+          break;
+        
         case Machine.HALTop:          
           status = halted;
           break;

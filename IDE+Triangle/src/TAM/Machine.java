@@ -50,8 +50,8 @@ public final class Machine {
     JUMPop = 12,
     JUMPIop = 13,
     JUMPIFop = 14,
-    HALTop = 15;
-
+    HALTop = 15,
+    INDEXCHECK = 16;
 
 
 // CODE STORE
@@ -133,7 +133,5 @@ public final class Machine {
     getintDisplacement = 25,
     putintDisplacement = 26,
     newDisplacement = 27,
-    disposeDisplacement = 28,
-    indexcheckDisplacement=29;
-
+    disposeDisplacement = 28;
 }

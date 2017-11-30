@@ -322,7 +322,11 @@ public class Disassembler {
         writeD(instr.d);
         writeR('[', instr.r, ']');
         break;
-
+        
+      case Machine.INDEXCHECK:
+        System.out.print ("INDEXCHECK  ");
+        break;
+      
       case Machine.HALTop:
         System.out.print ("HALT  ");
     }
