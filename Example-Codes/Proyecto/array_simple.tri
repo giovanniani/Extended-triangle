@@ -1,0 +1,18 @@
+let
+	var l : Integer;
+	var i := 0;
+	var a := ['j','a','k','e']
+in
+	l := 4;
+	put(a[0]);
+	puteol();
+	put(a[1]);
+	puteol();
+	put(a[2]);
+	puteol();
+	put(a[3]);
+	puteol();
+	!put(a[4]);
+	skip
+
+end

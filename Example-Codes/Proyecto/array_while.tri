@@ -1,0 +1,15 @@
+let
+	var l: Integer;
+	var i:= 0;
+	var a:= ['j','a','k','e','h']	
+in
+
+	repeat while i < 6 
+	do
+
+		put(a[i]);
+		puteol();
+		i:= i+1	
+
+	end
+end

@@ -1,0 +1,16 @@
+let
+  var a : array 5 of Char
+in
+begin
+
+  a := ['j', 'a', 'k', 'e', 'h'];
+  put(a[0]); ! imprime j
+  puteol();
+  put(a[4]); ! imprime h
+  puteol();
+  put(a[5]); ! debería imprimir j, pero tiene una pulga imprime h
+  puteol();
+  put(a[10]); ! imprime en blanco
+  puteol();
+
+end

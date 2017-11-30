@@ -1,0 +1,12 @@
+let
+    var a := ['A', 'B', 'C', 'D', 'E', 'F', 'G'];
+    var b := 'Z';
+    var c := 3
+in
+
+      put(a[19]);
+      !put(b);
+      puteol();
+      skip
+
+end
